@@ -34,26 +34,23 @@ export async function fetchUser(): Promise<User> {
   return body.data;
 }
 
-export async function postReward(action: 'ADD_TO_CART' | 'FAVORITE', productId: string): Promise<{
-  pointsAwarded: number;
-  user: User;
-}> {
+export async function postReward(
+  action: 'ADD_TO_CART' | 'FAVORITE',
+  productId: string,
+): Promise<{ pointsAwarded: number; user: User }> {
   const res = await fetch('/api/rewards', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action, productId }),
   });
-
   if (res.status === 409) {
     const user = await fetchUser();
     return { pointsAwarded: 0, user };
   }
-
   if (!res.ok) {
     const body = await res.json().catch(() => null);
     throw new Error(body?.error?.message ?? `HTTP ${res.status}`);
   }
-
   const body = await res.json();
   return body.data;
 }

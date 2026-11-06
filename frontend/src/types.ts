@@ -24,3 +24,5 @@ export type User = {
   name: string;
   points: number;
 };
+
+export type CartItem = { product: Product; quantity: number };

@@ -1,6 +1,11 @@
 import type { Product } from '../types';
 
-export function ProductCard({ product }: { product: Product }) {
+type Props = {
+  product: Product;
+  onAdd: (p: Product) => void;
+};
+
+export function ProductCard({ product, onAdd }: Props) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden flex flex-col">
       <img
@@ -14,12 +19,19 @@ export function ProductCard({ product }: { product: Product }) {
           {product.category}
         </span>
         <h3 className="font-semibold text-slate-800 line-clamp-2">{product.name}</h3>
-        <div className="mt-auto pt-2 flex items-center justify-between">
+        <div className="flex items-center justify-between pt-2">
           <span className="text-lg font-bold text-slate-900">
             ${parseInt(product.price)}
           </span>
           <span className="text-xs text-slate-500">stock: {product.stock}</span>
         </div>
+        <button
+          onClick={() => onAdd(product)}
+          disabled={product.stock === 0}
+          className="mt-2 w-full py-2 rounded-lg bg-slate-800 text-white text-sm hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Agregar
+        </button>
       </div>
     </div>
   );

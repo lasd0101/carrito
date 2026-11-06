@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { fetchCategories, fetchProducts, fetchUser } from './api';
-import type { Product, Pagination as Pag, User } from './types';
+import { fetchCategories, fetchProducts, fetchUser, postReward } from './api';
+import type { Product, Pagination as Pag, User, CartItem } from './types';
 import { Filters } from './components/Filters';
 import { ProductGrid } from './components/ProductGrid';
 import { Pagination } from './components/Pagination';
 import { PointsBadge } from './components/PointsBadge';
+import { CartButton } from './components/CartButton';
+import { CartDrawer } from './components/CartDrawer';
 
 const LIMIT = 8;
 
@@ -18,6 +20,9 @@ export default function App() {
   const [status, setStatus] = useState<'loading' | 'error' | 'ready'>('loading');
   const [errorMsg, setErrorMsg] = useState('');
   const [user, setUser] = useState<User | null>(null);
+
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartOpen, setCartOpen] = useState(false);
 
   useEffect(() => {
     fetchCategories().then(setCategories).catch(() => {});
@@ -44,16 +49,47 @@ export default function App() {
   const handleCategory = (c: string) => { setCategory(c); setPage(1); };
   const handleQuery = (v: string) => { setQ(v); setPage(1); };
 
+  function addToCart(product: Product) {
+    setCart((prev) => {
+      const existing = prev.find((i) => i.product.id === product.id);
+      if (existing) {
+        return prev.map((i) =>
+          i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i,
+        );
+      }
+      return [...prev, { product, quantity: 1 }];
+    });
+
+    postReward('ADD_TO_CART', product.id)
+      .then(({ user }) => setUser(user))
+      .catch(() => {});
+  }
+
+  function removeFromCart(productId: string) {
+    setCart((prev) => prev.filter((i) => i.product.id !== productId));
+  }
+
+  function setQuantity(productId: string, quantity: number) {
+    if (quantity <= 0) return removeFromCart(productId);
+    setCart((prev) =>
+      prev.map((i) => (i.product.id === productId ? { ...i, quantity } : i)),
+    );
+  }
+
+  const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0);
+  const cartTotal = cart.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
-          <h1 className="text-xl font-bold text-slate-800">Catálogo</h1>
+          <h1 className="text-xl font-bold text-slate-800">Mi Carrito</h1>
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-slate-700">
               {user?.name ?? '—'}
             </span>
             <PointsBadge points={user?.points ?? null} />
+            <CartButton count={cartCount} onClick={() => setCartOpen(true)} />
           </div>
         </div>
       </header>
@@ -95,7 +131,7 @@ export default function App() {
 
         {status === 'ready' && products.length > 0 && (
           <>
-            <ProductGrid products={products} />
+            <ProductGrid products={products} onAdd={addToCart} />
             {pagination && (
               <Pagination
                 page={pagination.page}
@@ -106,6 +142,15 @@ export default function App() {
           </>
         )}
       </main>
+
+      <CartDrawer
+        open={cartOpen}
+        items={cart}
+        total={cartTotal}
+        onClose={() => setCartOpen(false)}
+        onRemove={removeFromCart}
+        onQuantity={setQuantity}
+      />
     </div>
   );
 }
