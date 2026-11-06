@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { fetchCategories, fetchProducts } from './api';
-import type { Product, Pagination as Pag } from './types';
+import { fetchCategories, fetchProducts, fetchUser } from './api';
+import type { Product, Pagination as Pag, User } from './types';
 import { Filters } from './components/Filters';
 import { ProductGrid } from './components/ProductGrid';
 import { Pagination } from './components/Pagination';
+import { PointsBadge } from './components/PointsBadge';
 
 const LIMIT = 8;
 
@@ -16,13 +17,13 @@ export default function App() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<'loading' | 'error' | 'ready'>('loading');
   const [errorMsg, setErrorMsg] = useState('');
+  const [user, setUser] = useState<User | null>(null);
 
-  // Cargar categorías una sola vez
   useEffect(() => {
     fetchCategories().then(setCategories).catch(() => {});
+    fetchUser().then(setUser).catch(() => {});
   }, []);
 
-  // Cargar productos cuando cambian filtros o página
   useEffect(() => {
     setStatus('loading');
     const controller = new AbortController();
@@ -40,15 +41,20 @@ export default function App() {
     return () => controller.abort();
   }, [page, category, q]);
 
-  // Reset page al cambiar filtros
   const handleCategory = (c: string) => { setCategory(c); setPage(1); };
   const handleQuery = (v: string) => { setQ(v); setPage(1); };
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-slate-800">Mi Carrito - Catálogo</h1>
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+          <h1 className="text-xl font-bold text-slate-800">Catálogo</h1>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-slate-700">
+              {user?.name ?? '—'}
+            </span>
+            <PointsBadge points={user?.points ?? null} />
+          </div>
         </div>
       </header>
 

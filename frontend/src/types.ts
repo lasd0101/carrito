@@ -18,3 +18,9 @@ export type ProductsResponse = {
   data: Product[];
   pagination: Pagination;
 };
+
+export type User = {
+  id: string;
+  name: string;
+  points: number;
+};
