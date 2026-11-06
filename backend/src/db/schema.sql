@@ -13,16 +13,14 @@ CREATE TABLE IF NOT EXISTS users (
   points  INTEGER NOT NULL DEFAULT 0 CHECK (points >= 0)
 );
 
-CREATE TABLE IF NOT EXISTS reward_events (
-  id              TEXT PRIMARY KEY,
-  user_id         TEXT NOT NULL REFERENCES users(id),
-  action          TEXT NOT NULL,
-  product_id      TEXT REFERENCES products(id),
-  order_id        TEXT,
-  points          INTEGER NOT NULL,
-  idempotency_key TEXT NOT NULL,
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (user_id, idempotency_key)
+CCREATE TABLE IF NOT EXISTS reward_events (
+  id          TEXT PRIMARY KEY,
+  user_id     TEXT NOT NULL REFERENCES users(id),
+  action      TEXT NOT NULL,
+  product_id  TEXT NOT NULL REFERENCES products(id),
+  points      INTEGER NOT NULL CHECK (points > 0),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (user_id, action, product_id)
 );
 
 INSERT INTO products (id, name, price, category, image_url, stock) VALUES
