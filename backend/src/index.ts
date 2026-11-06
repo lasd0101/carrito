@@ -1,13 +1,12 @@
-import express from 'express';
 import { env } from './config/env.js';
+import { initDb } from './db/connection.js';
+import { buildApp } from './app.js';
 
-const app = express();
-const port = env.port;
+async function main() {
+  await initDb();
+  buildApp().listen(env.port, () => {
+    console.log(`API listening on http://localhost:${env.port}`);
+  });
+}
 
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime() });
-});
-
-app.listen(port, () => {
-  console.log(`API en http://localhost:${port}`);
-});
+main().catch((e) => { console.error('[fatal]', e); process.exit(1); });
