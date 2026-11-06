@@ -17,7 +17,6 @@ Mini e-commerce con catálogo de productos y filtros. Los usuarios acumulan punt
 - Node.js 20+
 - PostgreSQL 14+ corriendo localmente
 - Una base de datos creada: `createdb carrito`
-- Correr schema.sql que está en `backend/src/db/schema.sql`
 
 ## Ejecución
 
